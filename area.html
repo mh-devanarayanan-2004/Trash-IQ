@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Select Waste Bin Area</title>
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --accent:	#00FF00	;
+      --muted: #000000;
+      --gre:	#FFFFFF;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: url("back1.png") no-repeat center center fixed;
+      background-size: cover;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    /* Overlay for background opacity */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgb(7 16 40 / 0%); /* 40% opacity */
+      z-index: -1;
+    }
+
+
+  nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(11, 18, 32, 0.85);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      padding: 15px 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      color: var(--gre);
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.05em;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    /* Hover underline effect */
+    nav a::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      background: var(--accent);
+      left: 0;
+      bottom: -6px;
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    nav a:hover {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+
+
+
+    .container {
+  background: 
+    linear-gradient(rgb(11 18 32 / 50%), rgb(11 18 32 / 80%)), /* opacity overlay */
+    url("back3.jpg") center/cover no-repeat; /* your background image */
+  padding: 40px 50px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  width: 90%;
+  max-width: 600px;
+}
+
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 1.8em;
+      color: var(--accent);
+    }
+
+    p {
+      color: var( --gre);
+      margin-bottom: 30px;
+    }
+
+    /* Grid layout for area cards */
+    .area-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+    }
+
+    .area-card {
+      background: rgb(15 23 36 / 70%); /* Area card background opacity 70% */
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .area-card:hover {
+      background: rgb(15 23 36 / 90%); /* Darker on hover */
+      transform: scale(1.05);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+
+
+footer {
+  position: fixed;      /* keeps it anchored at the bottom */
+  bottom: 10px;         /* distance from bottom edge */
+  width: 100%;          /* full width for centering */
+  text-align: center;   /* center align the text */
+  font-size: 0.9rem;
+  font-weight: bold;    /* make the text bold */
+  color: var(--muted);  /* current color variable */
+}
+
+
+  </style>
+</head>
+<body>
+
+<nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+  <div class="container">
+    <h1>Select Your Area</h1>
+    <p>Choose the area you want to monitor the waste bin status for.</p>
+    
+    <div class="area-grid">
+      <div class="area-card" onclick="goToDashboard('mainCampus')">Main Campus</div>
+      <div class="area-card" onclick="goToDashboard('northZone')">North Zone</div>
+      <div class="area-card" onclick="goToDashboard('southZone')">South Zone</div>
+      <div class="area-card" onclick="goToDashboard('eastWing')">East Wing</div>
+      <div class="area-card" onclick="goToDashboard('westWing')">West Wing</div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Smart Waste Bin Monitoring System
+  </footer>
+
+  <script>
+    function goToDashboard(area) {
+      window.location.href = "dashboard.html?area=" + encodeURIComponent(area);
+    }
+  </script>
+</body>
+</html>
