@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRASH IQ - Smart Waste Bin System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="trashiq.jpeg" alt="TRASH IQ Logo" class="logo-img">
+                <span class="logo-text">TRASH IQ</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">
+                        <i class="fas fa-info-circle"></i> About
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">
+                        <i class="fas fa-envelope"></i> Contact
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <header class="header">
+                <div class="logo-section">
+                    <img src="trashiq.jpeg" alt="TRASH IQ Logo" class="main-logo">
+                </div>
+                <h1 class="main-title">Smart Waste Bin Monitoring System</h1>
+                <p class="subtitle">Real-time waste management insights for sustainable communities</p>
+            </header>
+
+            <div class="selection-container">
+                <div class="selection-box">
+                    <div class="location-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h2 class="selection-title">Select Your Location</h2>
+                    <p class="selection-subtitle">Choose your state, district, and panchayat to view bin monitoring data</p>
+                    
+                    <div class="dropdown-group">
+                        <div class="dropdown-container">
+                            <label for="state-select">State</label>
+                            <select id="state-select" class="dropdown">
+                                <option value="">Select State</option>
+                            </select>
+                        </div>
+
+                        <div class="dropdown-container">
+                            <label for="district-select">District</label>
+                            <select id="district-select" class="dropdown" disabled>
+                                <option value="">Select District</option>
+                            </select>
+                        </div>
+
+                        <div class="dropdown-container">
+                            <label for="panchayat-select">Panchayat</label>
+                            <select id="panchayat-select" class="dropdown" disabled>
+                                <option value="">Select Panchayat</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button id="view-monitoring-btn" class="monitoring-btn" disabled>
+                    <i class="fas fa-chart-line"></i> View Bin Monitoring
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#privacy" class="footer-link">Privacy Policy</a>
+                <a href="#terms" class="footer-link">Terms of Service</a>
+                <a href="#support" class="footer-link">Support</a>
+                <a href="#api" class="footer-link">API Documentation</a>
+            </div>
+            <div class="copyright">
+                © 2025 Smart Waste Bin Monitoring System
+            </div>
+            
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
