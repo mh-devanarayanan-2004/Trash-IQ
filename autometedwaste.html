@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Automated Waste Bin Monitoring — Dashboard</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8; --good:#10b981; --warn:#f59e0b; --bad:#ef4444;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071126 0%, #0c1b2a 100%);color:#e6eef6}
+    .wrap{max-width:1200px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .brand h1{font-size:18px;margin:0}
+    .brand p{margin:0;color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
+    .btn.ghost{color:var(--muted)}
+
+    main{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03)}
+    .card h3{margin:0 0 8px 0;font-size:14px}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* Bin card */
+    .bin{display:flex;gap:12px;align-items:center}
+    .bin .info{flex:1}
+    .progress-wrap{width:72px;height:72px;display:flex;align-items:center;justify-content:center}
+    svg.progress{transform:rotate(-90deg)}
+    .bin .meta{display:flex;gap:10px;margin-top:8px}
+    .pill{background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:8px;font-size:12px;color:var(--muted)}
+
+    /* list */
+    .list{display:flex;flex-direction:column;gap:8px}
+    .list-item{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;background:rgba(0,0,0,0.12)}
+
+    /* right column */
+    .right{display:flex;flex-direction:column;gap:14px}
+    .map-placeholder{height:200px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));color:var(--muted)}
+
+    /* table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;font-size:13px}
+    tr:not(:last-child) td{border-bottom:1px dashed rgba(255,255,255,0.03)}
+
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+    /* responsive */
+    @media (max-width:920px){main{grid-template-columns:1fr} .grid{grid-template-columns:repeat(2,1fr)} .right{order:2}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr} .brand h1{font-size:16px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">AW</div>
+        <div>
+          <h1>Automated Waste Bin Monitoring</h1>
+          <p class="muted">Real-time dashboard • multiple bins • sensor status</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="refreshBtn">Refresh Now</button>
+        <button class="btn ghost" id="toggleAuto">Auto: ON</button>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="grid">
+          <div class="card">
+            <h3>Overview</h3>
+            <div class="muted">Total bins tracked</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+              <div>
+                <div style="font-size:28px;font-weight:700" id="totalBins">3</div>
+                <div class="muted">Active • In last 10 min</div>
+              </div>
+              <div style="text-align:right">
+                <div class="muted">Avg fill</div>
+                <div style="font-size:22px;font-weight:700" id="avgFill">52%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Notifications</h3>
+            <div class="list" id="notifications">
+              <div class="list-item"><div><strong>Bin #2</strong><div class="muted" style="font-size:12px">Fill above 90%</div></div><div class="pill" style="color:var(--warn)">URGENT</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Live Activity</h3>
+            <div class="muted">Recent sensor events</div>
+            <table style="margin-top:10px">
+              <thead><tr><th>Time</th><th>Bin</th><th>Event</th></tr></thead>
+              <tbody id="events">
+                <tr><td>--</td><td>--</td><td class="muted">No events yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Individual bin cards (3 default) -->
+          <div class="card">
+            <h3>Bin #1 — Main Gate</h3>
+            <div class="bin">
+              <div class="progress-wrap">
+                <svg class="progress" width="72" height="72" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"></circle>
+                  <circle id="p1" cx="50" cy="50" r="40" stroke="var(--good)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="251.2" stroke-dashoffset="60"></circle>
+                </svg>
+              </div>
+              <div class="info">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><strong id="b1fill">48%</strong><div class="muted">Fill level</div></div>
+                  <div style="text-align:right"><div id="b1wt">12.6 kg</div><div class="muted">Weight</div></div>
+                </div>
+                <div class="meta">
+                  <div class="pill" id="b1status">OK</div>
+                  <div class="pill">Temp: <span id="b1temp">26°C</span></div>
+                  <div class="pill">Last: <span id="b1last">--</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Bin #2 — Food Court</h3>
+            <div class="bin">
+              <div class="progress-wrap">
+                <svg class="progress" width="72" height="72" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"></circle>
+                  <circle id="p2" cx="50" cy="50" r="40" stroke="var(--warn)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="251.2" stroke-dashoffset="60"></circle>
+                </svg>
+              </div>
+              <div class="info">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><strong id="b2fill">82%</strong><div class="muted">Fill level</div></div>
+                  <div style="text-align:right"><div id="b2wt">36.1 kg</div><div class="muted">Weight</div></div>
+                </div>
+                <div class="meta">
+                  <div class="pill" id="b2status">NEAR FULL</div>
+                  <div class="pill">Temp: <span id="b2temp">29°C</span></div>
+                  <div class="pill">Last: <span id="b2last">--</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Bin #3 — Parking</h3>
+            <div class="bin">
+              <div class="progress-wrap">
+                <svg class="progress" width="72" height="72" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"></circle>
+                  <circle id="p3" cx="50" cy="50" r="40" stroke="var(--good)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="251.2" stroke-dashoffset="60"></circle>
+                </svg>
+              </div>
+              <div class="info">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><strong id="b3fill">28%</strong><div class="muted">Fill level</div></div>
+                  <div style="text-align:right"><div id="b3wt">5.3 kg</div><div class="muted">Weight</div></div>
+                </div>
+                <div class="meta">
+                  <div class="pill" id="b3status">OK</div>
+                  <div class="pill">Temp: <span id="b3temp">24°C</span></div>
+                  <div class="pill">Last: <span id="b3last">--</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Small reusable card: quick stats -->
+          <div class="card">
+            <h3>Pickup Queue</h3>
+            <div class="muted">Bins requiring pickup</div>
+            <div style="margin-top:12px">
+              <div style="font-weight:700;font-size:20px" id="queueCount">1</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Sensor Health</h3>
+            <div class="muted">Last 24h</div>
+            <div style="margin-top:10px">
+              <table>
+                <thead><tr><th>Bin</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>#1</td><td id="s1">OK</td></tr>
+                  <tr><td>#2</td><td id="s2">OK</td></tr>
+                  <tr><td>#3</td><td id="s3">OK</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <footer>Tip: This page is a static prototype. Replace the simulated data update function with real API calls to your server (fetch / WebSocket).</footer>
+      </section>
+
+      <aside class="right">
+        <div class="card map-placeholder">
+          <div>
+            <div style="font-weight:700">Map / Location View</div>
+            <div class="muted" style="margin-top:6px">(Replace with embedded map or floorplan)</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Bin History (quick)</h3>
+          <canvas id="miniChart" width="320" height="140" style="width:100%;height:140px"></canvas>
+        </div>
+
+        <div class="card">
+          <h3>Actions</h3>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="exportCsv">Export CSV</button>
+            <button class="btn ghost" id="addBin">Add Bin</button>
+          </div>
+        </div>
+
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    // Simple simulated data model for three bins
+    const bins = [
+      {id:1,name:'Main Gate',fill:48,weight:12.6,temp:26,last:Date.now(),status:'OK'},
+      {id:2,name:'Food Court',fill:82,weight:36.1,temp:29,last:Date.now(),status:'NEAR FULL'},
+      {id:3,name:'Parking',fill:28,weight:5.3,temp:24,last:Date.now(),status:'OK'}
+    ];
+
+    let auto = true;
+    const totalBinsEl = document.getElementById('totalBins');
+    const avgFillEl = document.getElementById('avgFill');
+
+    function updateOverview(){
+      totalBinsEl.textContent = bins.length;
+      const avg = Math.round(bins.reduce((s,b)=>s+b.fill,0)/bins.length);
+      avgFillEl.textContent = avg + '%';
+      document.getElementById('queueCount').textContent = bins.filter(b=>b.fill>=85).length;
+    }
+
+    function setCircle(id, pct){
+      const circ = document.getElementById(id);
+      const radius = 40; const circLen = 2*Math.PI*radius; // 251.2
+      const offset = Math.round(circLen * (1 - pct/100));
+      circ.style.strokeDashoffset = offset;
+    }
+
+    function niceTime(ts){
+      const d = new Date(ts); return d.toLocaleTimeString();
+    }
+
+    function renderBins(){
+      // bin1
+      document.getElementById('b1fill').textContent = bins[0].fill + '%';
+      document.getElementById('b1wt').textContent = bins[0].weight.toFixed(1)+' kg';
+      document.getElementById('b1temp').textContent = bins[0].temp + '°C';
+      document.getElementById('b1last').textContent = niceTime(bins[0].last);
+      document.getElementById('b1status').textContent = bins[0].status;
+      setCircle('p1', bins[0].fill);
+
+      // bin2
+      document.getElementById('b2fill').textContent = bins[1].fill + '%';
+      document.getElementById('b2wt').textContent = bins[1].weight.toFixed(1)+' kg';
+      document.getElementById('b2temp').textContent = bins[1].temp + '°C';
+      document.getElementById('b2last').textContent = niceTime(bins[1].last);
+      document.getElementById('b2status').textContent = bins[1].status;
+      setCircle('p2', bins[1].fill);
+
+      // bin3
+      document.getElementById('b3fill').textContent = bins[2].fill + '%';
+      document.getElementById('b3wt').textContent = bins[2].weight.toFixed(1)+' kg';
+      document.getElementById('b3temp').textContent = bins[2].temp + '°C';
+      document.getElementById('b3last').textContent = niceTime(bins[2].last);
+      document.getElementById('b3status').textContent = bins[2].status;
+      setCircle('p3', bins[2].fill);
+
+      // events list (last 5)
+      const events = document.getElementById('events'); events.innerHTML='';
+      const now = Date.now();
+      for(let i=0;i<5;i++){
+        const b = bins[(i)%bins.length];
+        const tr = document.createElement('tr');
+        const t = new Date(now - i*60000).toLocaleTimeString();
+        tr.innerHTML = `<td>${t}</td><td>#${b.id}</td><td>${b.fill}% filled</td>`;
+        events.appendChild(tr);
+      }
+
+      // notifications
+      const notes = document.getElementById('notifications'); notes.innerHTML='';
+      bins.forEach(b=>{
+        if(b.fill>=90){
+          const el = document.createElement('div'); el.className='list-item';
+          el.innerHTML = `<div><strong>Bin #${b.id}</strong><div class="muted" style="font-size:12px">${b.name} — ${b.fill}%</div></div><div class="pill" style="color:var(--bad)">EMPTY NOW</div>`;
+          notes.appendChild(el);
+        } else if(b.fill>=80){
+          const el = document.createElement('div'); el.className='list-item';
+          el.innerHTML = `<div><strong>Bin #${b.id}</strong><div class="muted" style="font-size:12px">${b.name} — ${b.fill}%</div></div><div class="pill" style="color:var(--warn)">NEAR FULL</div>`;
+          notes.appendChild(el);
+        }
+      });
+
+      // sensor health
+      document.getElementById('s1').textContent = bins[0].status;
+      document.getElementById('s2').textContent = bins[1].status;
+      document.getElementById('s3').textContent = bins[2].status;
+
+      updateOverview();
+      drawMiniChart();
+    }
+
+    function simulateUpdate(){
+      // random walk for fill
+      bins.forEach(b=>{
+        const change = Math.random()*6 - 1.5; // could increase mostly
+        b.fill = Math.min(100, Math.max(0, Math.round(b.fill + change)));
+        b.weight = Math.max(0, b.weight + (change/100)*50 + (Math.random()-0.5));
+        b.temp = 20 + Math.round(Math.random()*12);
+        b.last = Date.now();
+        if(b.fill>=95) b.status='FAULT?';
+        else if(b.fill>=80) b.status='NEAR FULL';
+        else b.status='OK';
+      });
+      renderBins();
+    }
+
+    // mini chart (avg fill history)
+    const history = [];
+    function drawMiniChart(){
+      const c = document.getElementById('miniChart'); const ctx = c.getContext('2d');
+      const avg = Math.round(bins.reduce((s,b)=>s+b.fill,0)/bins.length);
+      history.push(avg); if(history.length>30) history.shift();
+      ctx.clearRect(0,0,c.width,c.height);
+      // background grid
+      ctx.globalAlpha=0.06;
+      for(let i=0;i<5;i++){ctx.fillRect(0,i*(c.height/5),c.width,1)}
+      ctx.globalAlpha=1;
+      // line
+      ctx.beginPath();
+      history.forEach((v,i)=>{
+        const x = i*(c.width/(history.length-1||1));
+        const y = c.height - (v/100)*c.height;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle = '#9be7f0'; ctx.lineWidth=2; ctx.stroke();
+    }
+
+    // user interactions
+    document.getElementById('refreshBtn').addEventListener('click', simulateUpdate);
+    document.getElementById('toggleAuto').addEventListener('click', ()=>{
+      auto = !auto; document.getElementById('toggleAuto').textContent = 'Auto: ' + (auto? 'ON':'OFF');
+    });
+
+    document.getElementById('exportCsv').addEventListener('click', ()=>{
+      let csv = 'id,name,fill,weight,temp,last,status\n';
+      bins.forEach(b=> csv+=`${b.id},"${b.name}",${b.fill},${b.weight.toFixed(2)},${b.temp},"${new Date(b.last).toISOString()}",${b.status}\n`);
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'bins.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('addBin').addEventListener('click', ()=>{
+      const id = bins.length+1; bins.push({id,name:'New Bin '+id,fill:0,weight:0,temp:25,last:Date.now(),status:'OK'});
+      renderBins();
+    });
+
+    // init
+    renderBins();
+    simulateUpdate();
+
+    setInterval(()=>{
+      if(auto) simulateUpdate();
+    }, 6000);
+
+  </script>
+</body>
+</html>
