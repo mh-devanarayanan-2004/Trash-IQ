@@ -4,6 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Automated Waste Bin Monitoring</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
 <style>
 :root{
   --bg:#0f1724;
@@ -156,62 +160,77 @@ main{padding:28px; width:100%; max-width:1200px}
 </div>
 
 <main>
-  <section class="grid" id="binsContainer">
-    <!-- Bin cards inserted by JS -->
-  </section>
+  <div class="bin">
+    <h3>Waste Bin Status</h3>
+    <div class="level">
+      <div class="meter"><i id="fill"></i></div>
+      <div class="percent" id="percent">--%</div>
+    </div>
+    <div class="status" id="status">Waiting for data…</div>
+  </div>
 </main>
 
 <script>
-const bins = [
-  {id:'bin1', name:'Dry Waste', desc:'Paper, plastics, non-biodegradable', level: 35},
-  {id:'bin2', name:'Wet Waste', desc:'Kitchen waste, organic', level: 60},
-  {id:'bin3', name:'Recyclables', desc:'Glass, metal, recyclable plastics', level: 80},
-  {id:'bin4', name:'Hazardous', desc:'Batteries, e-waste, chemicals', level: 50}
-];
+/* ---------- FIREBASE CONFIG ---------- */
+firebase.initializeApp({
+  apiKey: "AIzaSyBc7Dleud_41G6B1PKOJIHUmrNHIAldNKA	",
+  databaseURL: "https://trash-iq-default-rtdb.firebaseio.com/",
+  projectId: "trash-iq"
+});
 
-const container = document.getElementById('binsContainer');
+const db = firebase.database();
 
-function buildBinCard(bin){
-  const el = document.createElement('div');
-  el.className = 'bin';
-  el.id = bin.id;
-  el.innerHTML = `
-    <h3>${bin.name}</h3>
-    <div class="level">
-      <div class="meter"><i></i></div>
-      <div class="percent">--</div>
-    </div>
-    <div class="meta"><span>${bin.desc}</span><span class="status"><span class="status-dot" style="display:inline-block"></span>&nbsp;<small class="status-text">Unknown</small></span></div>
-  `;
-  return el;
-}
+/* ---------- UI ELEMENTS ---------- */
+const fill = document.getElementById("fill");
+const percent = document.getElementById("percent");
+const statusText = document.getElementById("status");
 
-bins.forEach(b=>container.appendChild(buildBinCard(b)));
+/* ---------- DISTANCE → BIN LEVEL ---------- */
+function updateBin(cm){
+  let level = 0;
+  fill.className = "";
 
-function setBinLevel(id, value){
-  const card = document.getElementById(id);
-  if(!card) return;
-  const meterFill = card.querySelector('.meter > i');
-  const percent = card.querySelector('.percent');
-  const statusDot = card.querySelector('.status-dot');
-  const statusText = card.querySelector('.status-text');
-
-  const v = Math.max(0, Math.min(100, Math.round(value)));
-  meterFill.style.width = v + '%';
-  percent.textContent = v + '%';
-
-  meterFill.classList.remove('green','orange','red');
-  if(v < 50){
-    meterFill.classList.add('green'); statusDot.style.background = '#10b981'; statusText.textContent = 'Normal';
-  } else if(v < 80){
-    meterFill.classList.add('orange'); statusDot.style.background = '#f59e0b'; statusText.textContent = 'Approaching full';
-  } else {
-    meterFill.classList.add('red'); statusDot.style.background = '#ef4444'; statusText.textContent = 'Full - Collect now';
+  if(cm < 20){
+    level = 90;
+    fill.classList.add("red");
+    statusText.textContent = "FULL – Collect Now";
   }
+  else if(cm < 30){
+    level = 60;
+    fill.classList.add("orange");
+    statusText.textContent = "HALF FILLED";
+  }
+  else if(cm < 60){
+    level = 20;
+    fill.classList.add("green");
+    statusText.textContent = "EMPTY";
+  }
+  else{
+    level = 0;
+    fill.classList.add("green");
+    statusText.textContent = "EMPTY";
+  }
+
+  fill.style.width = level + "%";
+  percent.textContent = level + "%";
 }
 
-// Set fixed bin levels on load
-bins.forEach(b => setBinLevel(b.id, b.level));
+/* ---------- READ FIREBASE EVERY 60 SECONDS ---------- */
+function readDistance(){
+  db.ref("/ultrasonic/distance_cm").once("value").then(snapshot=>{
+    const cm = snapshot.val();
+    if(cm !== null){
+      updateBin(cm);
+    }
+  });
+}
+
+// Initial read
+readDistance();
+
+// Update every 60 seconds
+setInterval(readDistance, 60000);
 </script>
+
 </body>
 </html>
