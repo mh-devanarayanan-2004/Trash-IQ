@@ -160,17 +160,32 @@ main{padding:28px; width:100%; max-width:1200px}
 </div>
 
 <main>
-  <div class="bin">
-    <h3>Waste Bin Status</h3>
-    <div class="level">
-      <div class="meter"><i id="fill"></i></div>
-      <div class="percent" id="percent">--%</div>
+  <div class="grid">
+
+    <!-- Biodegradable Bin -->
+    <div class="bin">
+      <h3>Biodegradable Bin</h3>
+      <div class="level">
+        <div class="meter"><i id="bio_fill"></i></div>
+        <div class="percent" id="bio_percent">--%</div>
+      </div>
+      <div class="status" id="bio_status">Waiting for data…</div>
     </div>
-    <div class="status" id="status">Waiting for data…</div>
+
+    <!-- Non-Biodegradable Bin -->
+    <div class="bin">
+      <h3>Non-Biodegradable Bin</h3>
+      <div class="level">
+        <div class="meter"><i id="nonbio_fill"></i></div>
+        <div class="percent" id="nonbio_percent">--%</div>
+      </div>
+      <div class="status" id="nonbio_status">Waiting for data…</div>
+    </div>
+
   </div>
 </main>
-
 <script>
+
 /* ---------- FIREBASE CONFIG ---------- */
 firebase.initializeApp({
   apiKey: "AIzaSyBc7Dleud_41G6B1PKOJIHUmrNHIAldNKA	",
@@ -180,60 +195,83 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-/* ---------- UI ELEMENTS ---------- */
-const fill = document.getElementById("fill");
-const percent = document.getElementById("percent");
-const statusText = document.getElementById("status");
+/* ---------- BIO BIN ELEMENTS ---------- */
+const bioFill = document.getElementById("bio_fill");
+const bioPercent = document.getElementById("bio_percent");
+const bioStatus = document.getElementById("bio_status");
 
-/* ---------- DISTANCE → BIN LEVEL ---------- */
-function updateBin(cm){
+/* ---------- NONBIO BIN ELEMENTS ---------- */
+const nonbioFill = document.getElementById("nonbio_fill");
+const nonbioPercent = document.getElementById("nonbio_percent");
+const nonbioStatus = document.getElementById("nonbio_status");
+
+
+/* ---------- UPDATE BIN FUNCTION ---------- */
+function updateBin(cm, fill, percent, status){
+
   let level = 0;
   fill.className = "";
 
-  if(cm < 20){
+  if(cm < 10){
     level = 90;
     fill.classList.add("red");
-    statusText.textContent = "FULL – Collect Now";
+    status.textContent = "FULL – Collect Now";
   }
-  else if(cm < 30){
+  else if(cm < 20){
     level = 60;
     fill.classList.add("orange");
-    statusText.textContent = "HALF FILLED";
+    status.textContent = "HALF FILLED";
   }
-  else if(cm < 60){
+  else if(cm < 30){
     level = 20;
     fill.classList.add("green");
-    statusText.textContent = "EMPTY";
+    status.textContent = "EMPTY";
   }
   else{
     level = 0;
     fill.classList.add("green");
-    statusText.textContent = "EMPTY";
+    status.textContent = "EMPTY";
   }
 
   fill.style.width = level + "%";
   percent.textContent = level + "%";
 }
 
-/* ---------- READ FIREBASE EVERY 60 SECONDS ---------- */
-function readDistance(){
-  db.ref("/ultrasonic/distance_cm").once("value").then(snapshot=>{
+
+/* ---------- READ BIO BIN ---------- */
+function readBioBin(){
+  db.ref("/bins/bio_distance").once("value").then(snapshot=>{
     const cm = snapshot.val();
     if(cm !== null){
-      updateBin(cm);
+      updateBin(cm, bioFill, bioPercent, bioStatus);
     }
   });
 }
 
-// Initial read
-readDistance();
 
-// Update every 60 seconds
-setInterval(readDistance, 1000);
+/* ---------- READ NONBIO BIN ---------- */
+function readNonBioBin(){
+  db.ref("/bins/nonbio_distance").once("value").then(snapshot=>{
+    const cm = snapshot.val();
+    if(cm !== null){
+      updateBin(cm, nonbioFill, nonbioPercent, nonbioStatus);
+    }
+  });
+}
+
+
+/* ---------- INITIAL READ ---------- */
+readBioBin();
+readNonBioBin();
+
+/* ---------- UPDATE EVERY SECOND ---------- */
+setInterval(()=>{
+  readBioBin();
+  readNonBioBin();
+},1000);
+
 </script>
-
 </body>
 </html>
-
 
 
