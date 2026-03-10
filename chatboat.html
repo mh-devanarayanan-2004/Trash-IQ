@@ -9,13 +9,11 @@
 
 body{
 margin:0;
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial;
 background:#0f172a;
 color:white;
 scroll-behavior:smooth;
 }
-
-/* Navbar */
 
 nav{
 display:flex;
@@ -23,9 +21,6 @@ justify-content:space-between;
 align-items:center;
 padding:15px 50px;
 background:#020617;
-position:sticky;
-top:0;
-z-index:100;
 }
 
 nav h2{
@@ -41,14 +36,7 @@ gap:30px;
 nav ul li a{
 text-decoration:none;
 color:white;
-transition:0.3s;
 }
-
-nav ul li a:hover{
-color:#22c55e;
-}
-
-/* Hero */
 
 .hero{
 height:90vh;
@@ -59,10 +47,6 @@ align-items:center;
 text-align:center;
 }
 
-.hero h1{
-font-size:55px;
-}
-
 .hero span{
 color:#22c55e;
 }
@@ -70,20 +54,11 @@ color:#22c55e;
 .hero button{
 margin-top:20px;
 padding:12px 25px;
-font-size:18px;
 border:none;
-border-radius:8px;
 background:#22c55e;
+border-radius:8px;
 cursor:pointer;
-transition:0.3s;
 }
-
-.hero button:hover{
-transform:scale(1.1);
-background:#16a34a;
-}
-
-/* Sections */
 
 section{
 padding:80px 10%;
@@ -92,11 +67,9 @@ padding:80px 10%;
 .section-title{
 text-align:center;
 font-size:40px;
-margin-bottom:50px;
+margin-bottom:40px;
 color:#22c55e;
 }
-
-/* About */
 
 .about-container{
 display:grid;
@@ -106,47 +79,9 @@ gap:30px;
 
 .card{
 background:#020617;
-padding:30px;
+padding:25px;
 border-radius:10px;
-transition:0.4s;
 }
-
-.card:hover{
-transform:translateY(-10px);
-box-shadow:0 0 20px #22c55e;
-}
-
-/* Contact */
-
-.contact-form{
-max-width:500px;
-margin:auto;
-display:flex;
-flex-direction:column;
-gap:15px;
-}
-
-.contact-form input,
-.contact-form textarea{
-padding:12px;
-border:none;
-border-radius:6px;
-}
-
-.contact-form button{
-background:#22c55e;
-border:none;
-padding:12px;
-cursor:pointer;
-transition:0.3s;
-}
-
-.contact-form button:hover{
-background:#16a34a;
-transform:scale(1.05);
-}
-
-/* Chatbot */
 
 .chatbot{
 position:fixed;
@@ -159,8 +94,8 @@ background:#22c55e;
 border:none;
 padding:15px;
 border-radius:50%;
-font-size:20px;
 cursor:pointer;
+font-size:18px;
 }
 
 .chatbox{
@@ -181,7 +116,6 @@ right:0;
 background:#22c55e;
 padding:10px;
 color:white;
-font-weight:bold;
 }
 
 .chat-messages{
@@ -201,18 +135,15 @@ border:none;
 }
 
 .chat-input button{
-background:#22c55e;
 border:none;
 padding:10px;
+background:#22c55e;
 cursor:pointer;
 }
 
 .voice-btn{
 background:#2563eb;
 color:white;
-border:none;
-padding:10px;
-cursor:pointer;
 }
 
 .message{
@@ -242,14 +173,12 @@ color:black;
 <ul>
 <li><a href="#home">Home</a></li>
 <li><a href="#about">About</a></li>
-<li><a href="#contact">Contact</a></li>
 </ul>
 </nav>
 
 <section class="hero" id="home">
 <h1>Smart Waste Sorting with <span>TrashIQ</span></h1>
-<p>AI Powered Smart Bin for Automated Waste Management</p>
-<button onclick="scrollToSection()">Learn More</button>
+<p>AI Powered Smart Waste Management</p>
 </section>
 
 <section id="about">
@@ -259,31 +188,20 @@ color:black;
 
 <div class="card">
 <h3>AI Waste Detection</h3>
-<p>TrashIQ identifies waste types like plastic, metal, paper and organic waste using AI.</p>
+<p>TrashIQ identifies waste using computer vision.</p>
 </div>
 
 <div class="card">
 <h3>Automatic Sorting</h3>
-<p>The system automatically opens the correct bin using servo motors.</p>
+<p>The correct bin opens automatically using servo motors.</p>
 </div>
 
 <div class="card">
 <h3>IoT Monitoring</h3>
-<p>Bin levels are monitored and data is sent through IoT platforms.</p>
+<p>Real-time bin monitoring using IoT.</p>
 </div>
 
 </div>
-</section>
-
-<section id="contact">
-<h2 class="section-title">Contact Us</h2>
-
-<form class="contact-form">
-<input type="text" placeholder="Your Name">
-<input type="email" placeholder="Email">
-<textarea rows="4" placeholder="Message"></textarea>
-<button>Send Message</button>
-</form>
 
 </section>
 
@@ -301,7 +219,7 @@ TrashIQ AI Assistant
 
 <div class="chat-input">
 
-<input id="userInput" placeholder="Ask something...">
+<input id="userInput" placeholder="Ask something">
 
 <button onclick="sendMessage()">Send</button>
 
@@ -317,13 +235,7 @@ TrashIQ AI Assistant
 
 const API_KEY="AIzaSyCSLcqiOtNHH2CWJzZoeiCYN8R6YYoV56Q";
 
-/* Scroll */
-
-function scrollToSection(){
-document.getElementById("about").scrollIntoView();
-}
-
-/* Chat toggle */
+/* toggle chatbot */
 
 function toggleChat(){
 let box=document.getElementById("chatbox");
@@ -331,29 +243,30 @@ box.style.display=box.style.display==="flex"?"none":"flex";
 box.style.flexDirection="column";
 }
 
-/* Add message */
+/* add message */
 
 function addMessage(text,type){
 
-let msg=document.createElement("div");
+let div=document.createElement("div");
 
-msg.classList.add("message",type);
+div.classList.add("message",type);
 
-msg.innerText=text;
+div.innerText=text;
 
-document.getElementById("messages").appendChild(msg);
+document.getElementById("messages").appendChild(div);
 
 document.getElementById("messages").scrollTop=
 document.getElementById("messages").scrollHeight;
 
 }
 
-/* AI Chat */
+/* AI chat */
 
 async function sendMessage(){
 
 let input=document.getElementById("userInput");
-let text=input.value;
+
+let text=input.value.trim();
 
 if(!text) return;
 
@@ -373,11 +286,8 @@ headers:{
 body:JSON.stringify({
 contents:[
 {
-role:"user",
 parts:[
-{
-text:"You are TrashIQ assistant. Answer about smart waste sorting systems. User question: "+text
-}
+{ text:text }
 ]
 }
 ]
@@ -387,9 +297,18 @@ text:"You are TrashIQ assistant. Answer about smart waste sorting systems. User 
 
 let data = await response.json();
 
-let reply =
-data.candidates?.[0]?.content?.parts?.[0]?.text ||
-"Sorry, I couldn't understand.";
+console.log("Gemini response:",data);
+
+let reply="No AI response";
+
+if(data.candidates &&
+data.candidates.length>0 &&
+data.candidates[0].content &&
+data.candidates[0].content.parts){
+
+reply=data.candidates[0].content.parts[0].text;
+
+}
 
 addMessage(reply,"bot");
 
@@ -399,18 +318,18 @@ speak(reply);
 
 console.error(error);
 
-addMessage("Error connecting to AI.","bot");
+addMessage("AI connection error","bot");
 
 }
 
 }
 
-/* Voice Input */
+/* voice input */
 
 function startVoice(){
 
-const recognition=
-new(window.SpeechRecognition||
+const recognition =
+new(window.SpeechRecognition ||
 window.webkitSpeechRecognition)();
 
 recognition.onresult=function(event){
@@ -427,7 +346,7 @@ recognition.start();
 
 }
 
-/* Voice Output */
+/* voice output */
 
 function speak(text){
 
