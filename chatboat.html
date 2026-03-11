@@ -263,10 +263,10 @@ document.getElementById("messages").scrollHeight;
 
 async function sendMessage(){
 
-let input = document.getElementById("userInput");
-let text = input.value.trim();
+let input=document.getElementById("userInput");
+let text=input.value.trim();
 
-if(text === "") return;
+if(!text) return;
 
 addMessage(text,"user");
 input.value="";
@@ -274,9 +274,9 @@ input.value="";
 try{
 
 let response = await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+API_KEY,
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+API_KEY,
 {
-method:"POST",
+method:"POsST",
 headers:{
 "Content-Type":"application/json"
 },
@@ -295,22 +295,16 @@ parts:[
 
 let data = await response.json();
 
-console.log("Gemini Response:", data);
+console.log("Gemini Response:",data);
 
-let reply = "";
+let reply="";
 
-if(data.candidates && data.candidates.length > 0){
-let parts = data.candidates[0].content.parts;
-
-for(let i=0;i<parts.length;i++){
-if(parts[i].text){
-reply += parts[i].text;
-}
-}
+if(data.candidates && data.candidates.length>0){
+reply=data.candidates[0].content.parts[0].text;
 }
 
-if(reply === ""){
-reply = "AI returned empty response.";
+if(!reply){
+reply="AI returned empty response.";
 }
 
 addMessage(reply,"bot");
@@ -318,12 +312,13 @@ speak(reply);
 
 }catch(error){
 
-console.error("API ERROR:",error);
+console.error(error);
 addMessage("AI connection error.","bot");
 
 }
 
 }
+
 /* voice input */
 
 function startVoice(){
