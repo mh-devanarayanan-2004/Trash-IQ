@@ -264,10 +264,10 @@ document.getElementById("messages").scrollHeight;
 
 async function sendMessage(){
 
-let input=document.getElementById("userInput");
-let text=input.value.trim();
+let input = document.getElementById("userInput");
+let text = input.value.trim();
 
-if(!text) return;
+if(text === "") return;
 
 addMessage(text,"user");
 input.value="";
@@ -275,53 +275,55 @@ input.value="";
 try{
 
 let response = await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="+API_KEY,
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + API_KEY,
 {
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
+body: JSON.stringify({
 contents:[
 {
+role:"user",
 parts:[
 { text:text }
 ]
 }
-]
+],
+generationConfig:{
+temperature:0.7,
+maxOutputTokens:200
+}
 })
 }
 );
 
 let data = await response.json();
 
-console.log("Gemini Response:",data);
-
-console.log("API RESPONSE:",data);
+console.log("Gemini Response:", data);
 
 let reply = "";
 
-if (
-data.candidates &&
-data.candidates.length > 0 &&
-data.candidates[0].content &&
-data.candidates[0].content.parts &&
-data.candidates[0].content.parts.length > 0
-) {
+if(data.candidates && data.candidates.length > 0){
+let parts = data.candidates[0].content.parts;
 
-reply = data.candidates[0].content.parts[0].text;
-
+for(let i=0;i<parts.length;i++){
+if(parts[i].text){
+reply += parts[i].text;
+}
+}
 }
 
-if(!reply){
+if(reply === ""){
 reply = "AI returned empty response.";
 }
+
 addMessage(reply,"bot");
 speak(reply);
 
 }catch(error){
 
-console.error(error);
+console.error("API ERROR:",error);
 addMessage("AI connection error.","bot");
 
 }
