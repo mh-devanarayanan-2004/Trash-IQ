@@ -299,16 +299,18 @@ console.log("API RESPONSE:",data);
 
 let reply="";
 
-if(data.candidates && data.candidates.length>0){
+try{
 
-let parts=data.candidates[0].content.parts;
+reply = data.candidates?.[0]?.content?.parts
+        ?.map(p => p.text)
+        ?.join(" ") || "";
 
-reply=parts.map(p=>p.text).join("");
-
+}catch(e){
+reply="";
 }
 
 if(!reply){
-reply="AI returned empty response.";
+reply="AI response could not be read.";
 }
 
 addMessage(reply,"bot");
