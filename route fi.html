@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Smart Waste Route Optimization</title>
+
+<!-- LEAFLET CSS -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<!-- ROUTING MACHINE CSS -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"/>
+
+<style>
+
+body{
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
+}
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+    padding:30px;
+}
+
+.feature-card{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    width:320px;
+    margin:auto;
+}
+
+.feature-card:hover{
+    transform:translateY(-5px);
+    transition:0.3s;
+}
+
+.feature-modal{
+    display:none;
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    z-index:999;
+
+    overflow-y:auto;
+
+    justify-content:center;
+    align-items:flex-start;
+
+    padding:20px 0;
+}
+
+.modal-content{
+    background:white;
+    width:90%;
+    max-width:1100px;
+    border-radius:15px;
+    padding:20px;
+
+    max-height:90vh;
+    overflow-y:auto;
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.modal-close{
+    background:red;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+#map{
+    width:100%;
+    height:500px;
+    margin-top:20px;
+    border-radius:12px;
+}
+
+button{
+    padding:12px 20px;
+    background:#10b981;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:20px;
+}
+
+.route-info{
+    margin-top:20px;
+}
+
+@media(max-width:768px){
+
+    button{
+        width:100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<div class="container">
+
+    <!-- ROUTE CARD -->
+    <div class="feature-card"
+         onclick="openFeatureModal()">
+
+        <h2>Route Optimization</h2>
+
+        <p>
+            Generate smart waste collection route
+            using current device location.
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<!-- ROUTE MODAL -->
+<div id="route-modal" class="feature-modal">
+
+    <div class="modal-content">
+
+        <!-- HEADER -->
+        <div class="modal-header">
+
+            <h2>Smart Waste Route Optimization</h2>
+
+            <button class="modal-close"
+                    onclick="closeFeatureModal()">
+                ×
+            </button>
+
+        </div>
+
+
+
+        <!-- BUTTON -->
+        <div style="margin-top:20px;">
+
+            <button onclick="useCurrentLocation()">
+                Generate Route From Current Location
+            </button>
+
+        </div>
+
+
+
+        <!-- MAP -->
+        <div id="map"></div>
+
+
+
+        <!-- INFO -->
+        <div class="route-info">
+
+            <h3>Fixed Waste Bin Locations</h3>
+
+            <ol>
+                <li>Bin-01 : Street A</li>
+                <li>Bin-02 : Market Road</li>
+                <li>Bin-03 : Bus Stop</li>
+            </ol>
+
+            <p>
+                Live route navigation using
+                OpenStreetMap and Leaflet Routing Machine.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- LEAFLET JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ROUTING MACHINE -->
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+
+let map;
+let routingControl;
+
+
+
+/* FIXED WASTE BIN LOCATIONS */
+const wasteBins = [
+
+    [9.0080,76.6150],
+
+    [9.0120,76.6200],
+
+    [9.0150,76.6250]
+
+];
+
+
+
+/* OPEN MODAL */
+function openFeatureModal(){
+
+    document.getElementById("route-modal")
+    .style.display = "flex";
+
+    setTimeout(()=>{
+
+        initializeMap();
+
+    },300);
+
+}
+
+
+
+/* CLOSE MODAL */
+function closeFeatureModal(){
+
+    document.getElementById("route-modal")
+    .style.display = "none";
+
+}
+
+
+
+/* INITIALIZE MAP */
+function initializeMap(){
+
+    if(map){
+
+        map.remove();
+
+    }
+
+    map = L.map('map')
+    .setView([9.008,76.615],13);
+
+
+
+    /* OPENSTREETMAP TILE */
+    L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution:'© OpenStreetMap'
+    }).addTo(map);
+
+
+
+    /* BIN MARKERS */
+    wasteBins.forEach((bin,index)=>{
+
+        L.marker(bin)
+        .addTo(map)
+        .bindPopup("Waste Bin " + (index+1));
+
+    });
+
+}
+
+
+
+/* CURRENT DEVICE LOCATION */
+function useCurrentLocation(){
+
+    if(!navigator.geolocation){
+
+        alert("Geolocation not supported");
+        return;
+
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+    function(position){
+
+        const userLat =
+        position.coords.latitude;
+
+        const userLng =
+        position.coords.longitude;
+
+        createRoute(userLat,userLng);
+
+    },
+
+    function(){
+
+        alert("Unable to get current location");
+
+    });
+
+}
+
+
+
+/* CREATE LIVE ROUTE */
+function createRoute(userLat,userLng){
+
+    /* REMOVE OLD ROUTE */
+    if(routingControl){
+
+        map.removeControl(routingControl);
+
+    }
+
+
+
+    /* USER MARKER */
+    L.marker([userLat,userLng])
+    .addTo(map)
+    .bindPopup("Current Location")
+    .openPopup();
+
+
+
+    /* LIVE ROUTING */
+    routingControl = L.Routing.control({
+
+        waypoints:[
+
+            L.latLng(userLat,userLng),
+
+            L.latLng(
+                wasteBins[0][0],
+                wasteBins[0][1]
+            ),
+
+            L.latLng(
+                wasteBins[1][0],
+                wasteBins[1][1]
+            ),
+
+            L.latLng(
+                wasteBins[2][0],
+                wasteBins[2][1]
+            )
+
+        ],
+
+        lineOptions:{
+            styles:[
+                {
+                    color:'blue',
+                    weight:6
+                }
+            ]
+        },
+
+        routeWhileDragging:false,
+
+        draggableWaypoints:false,
+
+        addWaypoints:false
+
+    }).addTo(map);
+
+
+
+    map.setView([userLat,userLng],13);
+
+}
+
+
+
+/* CLOSE MODAL WHEN CLICK OUTSIDE */
+window.onclick = function(event){
+
+    const modal =
+    document.getElementById("route-modal");
+
+    if(event.target === modal){
+
+        closeFeatureModal();
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>
