@@ -3,14 +3,14 @@
 #include <ESP32Servo.h>
 
 // ---------------- WIFI ----------------
-#define WIFI_SSID "iQOOZ10x"
-#define WIFI_PASSWORD "11/07/2004"
+#define WIFI_SSID ""
+#define WIFI_PASSWORD ""
 
 // ---------------- FIREBASE DETAILS ----------------
-#define API_KEY "AIzaSyBc7Dleud_41G6B1PKOJIHUmrNHIAldNKA"
-#define DATABASE_URL "https://trash-iq-default-rtdb.firebaseio.com/"
+#define API_KEY ""
+#define DATABASE_URL ""
 #define USER_EMAIL "mhdevanarayanan@gmail.com"
-#define USER_PASSWORD "11*07*2004"
+#define USER_PASSWORD ""
 
 // Firebase objects
 FirebaseData fbdo;
